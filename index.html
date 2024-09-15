@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perkirakan Cuaca Kota Anda</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <style>
+        .search-bar {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        body {
+            background: linear-gradient(to bottom, #87CEEB, #00BFFF); /* Efek gradasi biru yang memberikan kesan awan */
+            background-size: cover; /* Mengatur gambar latar belakang agar menutupi seluruh halaman */
+            color: white; /* Warna teks putih untuk kontras yang lebih baik */
+            font-family: Arial, sans-serif; /* Mengatur font untuk konsistensi */
+        }
+        .result {
+            display: none; /* Sembunyikan hasil pencarian secara default */
+            background-color: rgba(52, 58, 64, 0.8); /* Warna latar belakang dengan transparansi */
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            color: #e9ecef; /* Warna teks hasil pencarian */
+            text-align: center; /* Menengahkan teks */
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .result.show {
+            display: block; /* Tampilkan hasil pencarian */
+        }
+        .result h2, .result h5, .result p {
+            margin-bottom: 10px;
+        }
+        .result .temp {
+            font-size: 2rem; /* Ukuran font untuk suhu */
+        }
+        .result .description {
+            font-style: italic;
+        }
+        .result .icon {
+            width: 50px; /* Ukuran ikon cuaca */
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h2 class="text-center">Cek Cuaca di Daerah Anda</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="input-group search-bar">
+                    <input type="text" class="form-control input-keyword" id="search-query" placeholder="Masukkan kota">
+                    <button class="btn btn-primary" type="button" id="search-button">Cek cuaca</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5 result">
+        <!-- Hasil pencarian akan ditampilkan di sini -->
+    </div>
+    <script src="js/bootstrap.js"></script>
+    <script>
+        let input = document.querySelector("#search-query");
+        let buttonSearch = document.querySelector("#search-button");
+
+        buttonSearch.addEventListener('click', function() {
+            let query = input.value;
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${query}&appid=d1eb1b2a6c5da17a3d5ae41e2c1ccd9a&units=metric`)
+                .then(response => response.json())
+                .then(data => {
+                    let result = document.querySelector(".result");
+                    if (data.cod === 200) {
+                        result.innerHTML = `
+                            <h2 style="margin-bottom: 15px;">${data.name}, ${data.sys.country}</h2>
+                            <img src="http://openweathermap.org/img/wn/${data.weather[0].icon}.png" alt="${data.weather[0].description}" class="icon">
+                            <h5><span class="temp">${data.main.temp}°C</span> - <span class="description">${data.weather[0].description}</span></h5>
+                            <p style="margin-bottom: 17px;">Temperature from ${data.main.temp_min}°C to ${data.main.temp_max}°C</p>
+                            <h5>Wind speed: ${data.wind.speed} m/s</h5>
+                            <h5 class="mb-5">Clouds: ${data.clouds.all}%</h5>
+                            <h4>Geo coordinates: ${data.coord.lat}, ${data.coord.lon}</h4>
+                        `;
+                        result.classList.add('show'); // Tampilkan hasil pencarian
+                    } else {
+                        result.innerHTML = `<p class="text-danger">Kota tidak ditemukan. Silakan coba lagi.</p>`;
+                        result.classList.add('show'); // Tampilkan hasil pencarian
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.querySelector('.result').innerHTML = `<p class="text-danger">Terjadi kesalahan. Silakan coba lagi nanti.</p>`;
+                    document.querySelector('.result').classList.add('show'); // Tampilkan hasil pencarian
+                });
+        });
+    </script>
+</body>
+</html>
